@@ -1,0 +1,70 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>JsLexer Example</title>
+    <script language="javascript" type="text/javascript" src="JsLexer.js"></script>
+	<script language="javascript" type="text/javascript">
+    var calculator = [ 
+        {
+            name:       'WS', 
+            pattern:    '\\s+', 
+            ignore:     true
+        }, 
+        {
+            name:       'NUMBER', 
+            pattern:    '[0-9]+', 
+            preprocess: function(value) {
+                return '<span style="color:green">' + value + '</span>';
+            }
+        }, 
+        {
+            name:       'OPERATION', 
+            pattern:    '\\+|\\-|\\*|\\/|\\=', 
+            preprocess: function(value) {
+                return '<span style="color:#9900CC">' + value + '</span>';
+            }
+        }, 
+        {
+            name:       'SEPARATOR', 
+            pattern:    '\\(|\\)|;'
+        }, 
+        {
+            name:       'VAR', 
+            pattern:    'VAR', 
+            modifiers:  'i', 
+            preprocess: function(value) {
+                return '<span style="bold;color:blue">' + value + '</span>';
+            }
+        }, 
+        {
+            name:       'NAME', 
+            pattern:    '[a-zA-Z_][a-zA-Z0-9_]*', 
+            modifiers:  'i', 
+            preprocess: function(value) {
+                return '<span style="font-weight:bold;">' + value + '</span>';
+            }
+        }
+    ];
+    
+    function highlight() {
+        var editor = document.getElementById('editor');
+        var tokens = tokenization(editor.textContent, calculator);
+        
+        var result = '';
+        for (var i = 0; i < tokens.length; ++i) {
+            result = result + tokens[i].value;
+        }
+        editor.innerHTML = result;
+    }
+	</script>
+</head>
+<body onload="highlight()" style="font-size:20pt;">
+
+Calculator highlight: 
+<code id="editor" spellcheck="false">
+var A = 1 + 22 * (300 + 450);
+</code>
+
+</body>
+</html>
