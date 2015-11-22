@@ -10,20 +10,20 @@
 /**
  * Rules format:
  * 
- * <pre><code>
+ * <code><pre>
  * var rules = [
  *     {
- *         name: 'identifier',
- *         pattern: '[a-zA-Z0-9_]+',
+ *         name:        'identifier',
+ *         pattern:     '[a-zA-Z0-9_]+',
  *         // Optional
- *         ignore: false,
+ *         ignore:      false,
  *         // Optional
- *         preprocess: function(value) {
+ *         preprocess:  function(value) {
  *             return value;
  *         }
  *     }
  * ];
- * </code></pre>
+ * </pre></code>
  */
 var defaultPreprocess = function(value) {
     return value;
