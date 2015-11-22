@@ -28,18 +28,21 @@
 var defaultPreprocess = function(value) {
     return value;
 }
+
 function createToken(tokenValue, tokenRule) {
     return {
-        value: tokenRule.preprocess(tokenValue),
-        startPos: 0,
-        endPos: tokenValue.length,
-        rule: tokenRule
+        value:      tokenRule.preprocess(tokenValue),
+        startPos:   0,
+        endPos:     tokenValue.length,
+        rule:       tokenRule
     };
 }
+
 function matching(text, tokenRules) {
-    var index = text.length;
-    var tokenValue = null;
-    var tokenRule = null;
+    var index       = text.length;
+    var tokenValue  = null;
+    var tokenRule   = null;
+
     // Search token closest to begin of string.
     for (var i = 0; i < tokenRules.length; ++i) {
         var tr = tokenRules[i];
@@ -51,12 +54,14 @@ function matching(text, tokenRules) {
                 tokenValue = match[0];
                 tokenRule = tr;
             }
+
             // Best token found.
             if (index == 0) {
                 break;
             }
         }
     }
+
     // Check that token was found.
     if (index == 0) {
         return createToken(tokenValue, tokenRule);
@@ -64,29 +69,36 @@ function matching(text, tokenRules) {
         throw 'Can not parse string "' + text.substring(0, index) + '"!';
     }
 }
+
 function preprocessRules(tokenRules) {
     for (var i = 0; i < tokenRules.length; ++i) {
         var tokenRule = tokenRules[i];
+
         // Name.
         if (!tokenRule.name) {
             tokenRule.name = tokenRule.pattern;
         }
+
         // Ignore.
         if (!tokenRule.ignore) {
             tokenRule.ignore = false;
         }
+
         // Preprocess.
         if (!tokenRule.preprocess) {
             tokenRule.preprocess = defaultPreprocess;
         }
     }
 }
+
 function tokenization(text, tokenRules) {
     preprocessRules(tokenRules);
-    var result = [];
-    var currentIndex = 0;
+
+    var result          = [];
+    var currentIndex    = 0;
     while (currentIndex < text.length) {
         var token = matching(text.substring(currentIndex), tokenRules);
+        
         if (!token.rule.ignor) {
             token.startPos = token.startPos + currentIndex;
             token.endPos = token.endPos + currentIndex;
@@ -95,5 +107,6 @@ function tokenization(text, tokenRules) {
         currentIndex = token.endPos;
         token = null;
     }
+
     return result;
 }
