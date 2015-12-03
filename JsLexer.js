@@ -1,9 +1,9 @@
 /*
  * JsLexer -- Pure JavaScript Lexer.
  *
- * Version 1.0.0.
+ * Version 2.0.0.
  *
- * Copyright (c) 2015 Dmitriy Zavodnikov.
+ * Copyright (c) 2015 Dmitry Zavodnikov.
  *
  * Licensed under the MIT License.
  */
@@ -13,13 +13,13 @@
  * <code><pre>
  * var rules = [
  *     {
- *         name:        'identifier',
- *         pattern:     '[a-zA-Z0-9_]+',
+ *         name:        'number',   // Name
+ *         pattern:     '[0-9]+',   // RegExp
  *         // Optional
- *         ignore:      false,
- *         // Optional
+ *         modifiers:   'i',        // Default is empty. 
+                                    // See 'http://www.w3schools.com/jsref/jsref_obj_regexp.asp' for more details.
  *         preprocess:  function(value) {
- *             return value;
+ *             return value;        // Default behaviour.
  *         }
  *     }
  * ];
@@ -29,33 +29,24 @@ var defaultPreprocess = function(value) {
     return value;
 }
 
-function createToken(tokenValue, tokenRule) {
-    return {
-        value:      tokenRule.preprocess(tokenValue),
-        startPos:   0,
-        endPos:     tokenValue.length,
-        rule:       tokenRule
-    };
-}
-
-function matching(text, tokenRules) {
+function matching(text, currentPosition, tokenRules) {
     var index       = text.length;
     var tokenValue  = null;
     var tokenRule   = null;
 
     // Search token closest to begin of string.
     for (var i = 0; i < tokenRules.length; ++i) {
-        var tr = tokenRules[i];
-        var match = text.match(new RegExp(tr.pattern, tr.modifiers));
+        var tr      = tokenRules[i];
+        var match   = text.substring(currentPosition).match(new RegExp(tr.pattern, tr.modifiers));
         if (match) {
             // Save local minimum.
             if (index > match.index) {
-                index = match.index;
-                tokenValue = match[0];
-                tokenRule = tr;
+                index       = match.index;
+                tokenValue  = match[0];
+                tokenRule   = tr;
             }
 
-            // Best token found.
+            // Best token (nearest to current position) found.
             if (index == 0) {
                 break;
             }
@@ -64,48 +55,57 @@ function matching(text, tokenRules) {
 
     // Check that token was found.
     if (index == 0) {
-        return createToken(tokenValue, tokenRule);
+        return {
+            value:      tokenRule.preprocess(tokenValue),
+            startPos:   currentPosition,
+            endPos:     currentPosition + tokenValue.length,
+            rule:       tokenRule
+        };
     } else {
-        throw 'Can not parse string "' + text.substring(0, index) + '"!';
+        var unparsedText = text.substring(currentPosition, currentPosition + index);
+        return {
+            value:      unparsedText,
+            startPos:   currentPosition,
+            endPos:     currentPosition + unparsedText.length,
+            rule:       null
+        };
     }
 }
 
-function preprocessRules(tokenRules) {
-    for (var i = 0; i < tokenRules.length; ++i) {
-        var tokenRule = tokenRules[i];
+function fillMissingRuleFields(tokenRule) {
+    // Pattern.
+    if (!tokenRule.pattern) {
+        throw 'All token rules should contain reg-exp pattern!';
+    }
 
-        // Name.
-        if (!tokenRule.name) {
-            tokenRule.name = tokenRule.pattern;
-        }
+    // Name.
+    if (!tokenRule.name) {
+        tokenRule.name = tokenRule.pattern;
+    }
 
-        // Ignore.
-        if (!tokenRule.ignore) {
-            tokenRule.ignore = false;
-        }
-
-        // Preprocess.
-        if (!tokenRule.preprocess) {
-            tokenRule.preprocess = defaultPreprocess;
-        }
+    // Preprocess.
+    if (!tokenRule.preprocess) {
+        tokenRule.preprocess = defaultPreprocess;
     }
 }
 
 function tokenization(text, tokenRules) {
-    preprocessRules(tokenRules);
+    // Preprocess.
+    for (var i = 0; i < tokenRules.length; ++i) {
+        var tokenRule = tokenRules[i];
+        fillMissingRuleFields(tokenRule);
+    }
 
+    // Parsing.
     var result          = [];
-    var currentIndex    = 0;
-    while (currentIndex < text.length) {
-        var token = matching(text.substring(currentIndex), tokenRules);
-        
-        if (!token.rule.ignor) {
-            token.startPos = token.startPos + currentIndex;
-            token.endPos = token.endPos + currentIndex;
-            result.push(token);
-        }
-        currentIndex = token.endPos;
-        token = null;
+    var currentPosition = 0;
+    while (currentPosition < text.length) {
+        // Find token.
+        var token = matching(text, currentPosition, tokenRules);
+        // Update current position.
+        currentPosition = token.endPos;
+        // Add token to result list.
+        result.push(token);
     }
 
     return result;
