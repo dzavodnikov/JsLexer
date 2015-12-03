@@ -29,6 +29,23 @@ var defaultPreprocess = function(value) {
     return value;
 }
 
+function fillMissingRuleFields(tokenRule) {
+    // Pattern.
+    if (!tokenRule.pattern) {
+        throw 'All token rules should contain reg-exp pattern!';
+    }
+
+    // Name.
+    if (!tokenRule.name) {
+        tokenRule.name = tokenRule.pattern;
+    }
+
+    // Preprocess.
+    if (!tokenRule.preprocess) {
+        tokenRule.preprocess = defaultPreprocess;
+    }
+}
+
 function matching(text, currentPosition, tokenRules) {
     var index       = text.length;
     var tokenValue  = null;
@@ -69,23 +86,6 @@ function matching(text, currentPosition, tokenRules) {
             endPos:     currentPosition + unparsedText.length,
             rule:       null
         };
-    }
-}
-
-function fillMissingRuleFields(tokenRule) {
-    // Pattern.
-    if (!tokenRule.pattern) {
-        throw 'All token rules should contain reg-exp pattern!';
-    }
-
-    // Name.
-    if (!tokenRule.name) {
-        tokenRule.name = tokenRule.pattern;
-    }
-
-    // Preprocess.
-    if (!tokenRule.preprocess) {
-        tokenRule.preprocess = defaultPreprocess;
     }
 }
 
