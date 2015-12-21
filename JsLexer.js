@@ -89,24 +89,31 @@ function matching(text, currentPosition, tokenRules) {
     }
 }
 
-function tokenization(text, tokenRules) {
-    // Preprocess.
+function tokenRulesPreprocessing(tokenRules) {
     for (var i = 0; i < tokenRules.length; ++i) {
         var tokenRule = tokenRules[i];
         fillMissingRuleFields(tokenRule);
     }
+}
 
-    // Parsing.
-    var result          = [];
-    var currentPosition = 0;
-    while (currentPosition < text.length) {
-        // Find token.
-        var token = matching(text, currentPosition, tokenRules);
-        // Update current position.
-        currentPosition = token.endPos;
-        // Add token to result list.
-        result.push(token);
+function tokenization(text, tokenRules) {
+    if (!tokenRules) {
+        throw 'Token rules can not be null!';
+    }
+    tokenRulesPreprocessing(tokenRules);
+
+    var tokens          = [];
+    if (!text) {
+        var currentPosition = 0;
+        while (currentPosition < text.length) {
+            // Find token.
+            var token = matching(text, currentPosition, tokenRules);
+            // Update current position.
+            currentPosition = token.endPos;
+            // Add token to result list.
+            tokens.push(token);
+        }
     }
 
-    return result;
+    return tokens;
 }
