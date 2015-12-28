@@ -8,44 +8,48 @@
     var calculator = [ 
         {
             name:       'WS', 
-            pattern:    '\\s+', 
+            pattern:    new RegExp('\\s+'), 
+            // User-defined value.
             preprocess: function(value) {
                 return ' '; // Use one space.
             }
         }, 
         {
             name:       'NUMBER', 
-            pattern:    '[0-9]+', 
+            pattern:    new RegExp('[0-9]+'), 
+            // User-defined value.
             preprocess: function(value) {
                 return '<span style="color:green;">' + value + '</span>';
             }
         }, 
         {
             name:       'OPERATION', 
-            pattern:    '\\+|\\-|\\*|\\/|\\=', 
+            pattern:    new RegExp('\\+|\\-|\\*|\\/|\\='), 
+            // User-defined value.
             preprocess: function(value) {
                 return '<span style="color:#9900CC;">' + value + '</span>';
             }
         }, 
         {
             name:       'SEPARATOR', 
-            pattern:    '\\(|\\)|;',
+            pattern:    new RegExp('\\(|\\)|;'), 
+            // User-defined value.
             preprocess: function(value) {
                 return '<span style="color:#FFCC00;">' + value + '</span>';
             }
         }, 
         {
             name:       'VAR', 
-            pattern:    'VAR', 
-            modifiers:  'i', 
+            pattern:    new RegExp('VAR', 'i'), 
+            // User-defined value.
             preprocess: function(value) {
                 return '<span style="color:blue;">' + value + '</span>';
             }
         }, 
         {
             name:       'NAME', 
-            pattern:    '[a-zA-Z_][a-zA-Z0-9_]*', 
-            modifiers:  'i', 
+            pattern:    new RegExp('[a-zA-Z_][a-zA-Z0-9_]*', 'i'), 
+            // User-defined value.
             preprocess: function(value) {
                 return '<span style="color:red;">' + value + '</span>';
             }
@@ -54,13 +58,15 @@
     
     function highlight() {
         var editor = document.getElementById('editor');
-        var tokens = tokenization(editor.textContent, calculator);
-        
+
+        var tokens = tokenization(calculator, editor.textContent);
+
         var result = '';
         for (var i = 0; i < tokens.length; ++i) {
             var token = tokens[i];
-            result = result + token.value;
+            result = result + token.type.preprocess(token.value);
         }
+
         editor.innerHTML = result;
     }
 	</script>

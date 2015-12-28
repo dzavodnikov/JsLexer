@@ -1,7 +1,7 @@
 /*
  * JsLexer -- Pure JavaScript Lexer.
  *
- * Version 2.0.0.
+ * Version 3.0.0.
  *
  * Copyright (c) 2015 Dmitry Zavodnikov.
  *
@@ -13,107 +13,86 @@
  * <code><pre>
  * var rules = [
  *     {
- *         name:        'number',   // Name
- *         pattern:     '[0-9]+',   // RegExp
- *         // Optional
- *         modifiers:   'i',        // Default is empty. 
-                                    // See 'http://www.w3schools.com/jsref/jsref_obj_regexp.asp' for more details.
- *         preprocess:  function(value) {
- *             return value;        // Default behaviour.
+ *         name:    'number',            // Name
+ *         pattern: new RegExp('[0-9]+') // RegExp
+ *     }
+ * ];
+ * </pre></code>
+ * 
+ * Return format:
+ * <code><pre>
+ * var tokens = [
+ *     {
+ *         value:    '123',
+ *         startPos: 12,
+ *         endPos:   15,
+ *         type:     {
+ *             name:    'number',
+ *             pattern: new RegExp('[0-9]+')
  *         }
  *     }
  * ];
  * </pre></code>
  */
-var defaultPreprocess = function(value) {
-    return value;
-}
-
-function fillMissingRuleFields(tokenRule) {
-    // Pattern.
-    if (!tokenRule.pattern) {
-        throw 'All token rules should contain reg-exp pattern!';
-    }
-
-    // Name.
-    if (!tokenRule.name) {
-        tokenRule.name = tokenRule.pattern;
-    }
-
-    // Preprocess.
-    if (!tokenRule.preprocess) {
-        tokenRule.preprocess = defaultPreprocess;
-    }
-}
-
-function matching(text, currentPosition, tokenRules) {
-    var index       = text.length;
-    var tokenValue  = null;
-    var tokenRule   = null;
-
-    // Search token closest to begin of string.
-    for (var i = 0; i < tokenRules.length; ++i) {
-        var tr      = tokenRules[i];
-        var match   = text.substring(currentPosition).match(new RegExp(tr.pattern, tr.modifiers));
-        if (match) {
-            // Save local minimum.
-            if (index > match.index) {
-                index       = match.index;
-                tokenValue  = match[0];
-                tokenRule   = tr;
-            }
-
-            // Best token (nearest to current position) found.
-            if (index == 0) {
-                break;
-            }
-        }
-    }
-
-    // Check that token was found.
-    if (index == 0) {
-        return {
-            value:      tokenRule.preprocess(tokenValue),
-            startPos:   currentPosition,
-            endPos:     currentPosition + tokenValue.length,
-            rule:       tokenRule
-        };
-    } else {
-        var unparsedText = text.substring(currentPosition, currentPosition + index);
-        return {
-            value:      unparsedText,
-            startPos:   currentPosition,
-            endPos:     currentPosition + unparsedText.length,
-            rule:       null
-        };
-    }
-}
-
 function tokenRulesPreprocessing(tokenRules) {
     for (var i = 0; i < tokenRules.length; ++i) {
         var tokenRule = tokenRules[i];
-        fillMissingRuleFields(tokenRule);
+        if (!tokenRule.pattern) {
+            throw 'All token rules should contain reg-exp pattern!';
+        }
+        if (!tokenRule.name) {
+            tokenRule.name = tokenRule.pattern;
+        }
     }
 }
 
-function tokenization(text, tokenRules) {
+function tokenization(tokenRules, input) {
     if (!tokenRules) {
         throw 'Token rules can not be null!';
     }
     tokenRulesPreprocessing(tokenRules);
 
-    var tokens          = [];
-    if (!text) {
+    var tokens = [];
+    if (input != null && input.length > 0) {
         var currentPosition = 0;
-        while (currentPosition < text.length) {
-            // Find token.
-            var token = matching(text, currentPosition, tokenRules);
-            // Update current position.
-            currentPosition = token.endPos;
-            // Add token to result list.
-            tokens.push(token);
+        while (currentPosition < input.length) {
+            var currentInput = input.substring(currentPosition, input.length);
+
+            // Search token closest to begin of string.
+            var tokenPosition   = currentInput.length;
+            var tokenValue      = null;
+            var tokenType       = null;
+            for (var i = 0; i < tokenRules.length; ++i) {
+                var type = tokenRules[i];
+                var matcher = currentInput.match(type.pattern);
+                if (matcher) {
+                    if (tokenPosition > matcher.index) {
+                        tokenPosition   = matcher.index;
+                        tokenValue      = matcher[0];
+                        tokenType       = type;
+                    }
+
+                    // Best token (nearest to current position) found.
+                    if (tokenPosition == 0) {
+                        break;
+                    }
+                }
+            }
+
+            if (tokenPosition != 0) {
+                tokenValue  = currentInput.substring(0, tokenPosition);
+                tokenType   = null;
+            }
+
+            var end = currentPosition + tokenValue.length;
+            tokens.push({
+                value:      tokenValue,
+                startPos:   currentPosition,
+                endPos:     end,
+                type:       tokenType
+            });
+            currentPosition = end;
         }
     }
-
     return tokens;
 }
