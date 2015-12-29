@@ -8,51 +8,27 @@
     var calculator = [ 
         {
             name:       'WS', 
-            pattern:    new RegExp('\\s+'), 
-            // User-defined value.
-            preprocess: function(value) {
-                return ' '; // Use one space.
-            }
+            pattern:    /\s+/
         }, 
         {
             name:       'NUMBER', 
-            pattern:    new RegExp('[0-9]+'), 
-            // User-defined value.
-            preprocess: function(value) {
-                return '<span style="color:green;">' + value + '</span>';
-            }
+            pattern:    /[0-9]+/
         }, 
         {
             name:       'OPERATION', 
-            pattern:    new RegExp('\\+|\\-|\\*|\\/|\\='), 
-            // User-defined value.
-            preprocess: function(value) {
-                return '<span style="color:#9900CC;">' + value + '</span>';
-            }
+            pattern:    /\+|\-|\*|\/|\=/
         }, 
         {
             name:       'SEPARATOR', 
-            pattern:    new RegExp('\\(|\\)|;'), 
-            // User-defined value.
-            preprocess: function(value) {
-                return '<span style="color:#FFCC00;">' + value + '</span>';
-            }
+            pattern:    /\(|\)|;/
         }, 
         {
             name:       'VAR', 
-            pattern:    new RegExp('VAR', 'i'), 
-            // User-defined value.
-            preprocess: function(value) {
-                return '<span style="color:blue;">' + value + '</span>';
-            }
+            pattern:    /VAR/i
         }, 
         {
             name:       'NAME', 
-            pattern:    new RegExp('[a-zA-Z_][a-zA-Z0-9_]*', 'i'), 
-            // User-defined value.
-            preprocess: function(value) {
-                return '<span style="color:red;">' + value + '</span>';
-            }
+            pattern:    /[a-zA-Z_]+[a-zA-Z0-9_]*/i
         }
     ];
     
@@ -64,7 +40,30 @@
         var result = '';
         for (var i = 0; i < tokens.length; ++i) {
             var token = tokens[i];
-            result = result + token.type.preprocess(token.value);
+            if (token.type != null) {
+                switch (token.type.name) {
+                case 'WS':
+                    result = result + '&nbsp;';
+                    break;
+                case 'NUMBER':
+                    result = result + '<span style="color:green;">'     + token.value + '</span>'
+                    break;
+                case 'OPERATION':
+                    result = result + '<span style="color:#9900CC;">'   + token.value + '</span>'
+                    break;
+                case 'SEPARATOR':
+                    result = result + '<span style="color:#FFCC00;">'   + token.value + '</span>'
+                    break;
+                case 'VAR':
+                    result = result + '<span style="color:blue;">'      + token.value + '</span>'
+                    break;
+                case 'NAME':
+                    result = result + '<span style="color:red;">'       + token.value + '</span>'
+                    break;
+                }
+            } else {
+                throw 'Can not parse value "' + token.value + '"!'
+            }
         }
 
         editor.innerHTML = result;
