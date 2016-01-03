@@ -7,36 +7,60 @@
 	<script language="javascript" type="text/javascript">
     var calculator = [ 
         {
-            name:       'WHITESPACE', 
-            pattern:    new RegExp("\\s+")
+            name:           'WHITESPACE', 
+            pattern:        new RegExp("\\s+"),
+            preprocessing:  function(rawValue) {
+                return '&nbsp;';
+            }
         }, 
         {
-            name:       'NUMBER', 
-            pattern:    new RegExp("[0-9]+")
+            name:           'NUMBER', 
+            pattern:        new RegExp("[0-9]+"),
+            preprocessing:  function(rawValue) {
+                return '<span style="color:green;">' + rawValue + '</span>';
+            }
         }, 
         {
-            name:       'OPERATOR', 
-            pattern:    new RegExp("\\+|\\-|\\*|\\/|\\=")
+            name:           'OPERATOR', 
+            pattern:        new RegExp("\\+|\\-|\\*|\\/|\\="),
+            preprocessing:  function(rawValue) {
+                return '<span style="color:#9900CC;">' + rawValue + '</span>';
+            }
         }, 
         {
-            name:       'SEPARATOR', 
-            pattern:    new RegExp(";")
+            name:           'SEPARATOR', 
+            pattern:        new RegExp(";"),
+            preprocessing:  function(rawValue) {
+                return '<span style="color:black;">' + rawValue + '</span>';
+            }
         }, 
         {
-            name:       'BRACKET_LEFT', 
-            pattern:    new RegExp("\\(")
+            name:           'BRACKET_LEFT', 
+            pattern:        new RegExp("\\("),
+            preprocessing:  function(rawValue) {
+                return '<span style="color:#FFCC00;">' + rawValue + '</span>';
+            }
         }, 
         {
-            name:       'BRACKET_RIGHT', 
-            pattern:    new RegExp("\\)")
+            name:           'BRACKET_RIGHT', 
+            pattern:        new RegExp("\\)"),
+            preprocessing:  function(rawValue) {
+                return '<span style="color:#FFCC00;">' + rawValue + '</span>';
+            }
         }, 
         {
-            name:       'VAR', 
-            pattern:    new RegExp("VAR", "i")
+            name:           'VAR', 
+            pattern:        new RegExp("VAR", "i"),
+            preprocessing:  function(rawValue) {
+                return '<span style="color:blue;">' + rawValue.toUpperCase() + '</span>';
+            }
         }, 
         {
-            name:       'NAME', 
-            pattern:    new RegExp("[a-zA-Z_]+[a-zA-Z0-9_]*")
+            name:           'NAME', 
+            pattern:        new RegExp("[a-zA-Z_]+[a-zA-Z0-9_]*"),
+            preprocessing:  function(rawValue) {
+                return '<span style="color:red;">' + rawValue.toLowerCase() + '</span>';
+            }
         }
     ];
     
@@ -48,34 +72,8 @@
         var result = '';
         for (var i = 0; i < tokens.length; ++i) {
             var token = tokens[i];
-            if (token.type != null) {
-                switch (token.type.name) {
-                case 'WHITESPACE':
-                    result = result + '&nbsp;';
-                    break;
-                case 'NUMBER':
-                    result = result + '<span style="color:green;">'     + token.value + '</span>';
-                    break;
-                case 'OPERATOR':
-                    result = result + '<span style="color:#9900CC;">'   + token.value + '</span>';
-                    break;
-                case 'SEPARATOR':
-                    result = result + '<span style="color:black;">'     + token.value + '</span>';
-                    break;
-                case 'BRACKET_LEFT':
-                case 'BRACKET_RIGHT':
-                    result = result + '<span style="color:#FFCC00;">'   + token.value + '</span>';
-                    break;
-                case 'VAR':
-                    result = result + '<span style="color:blue;">'      + token.value.toUpperCase() + '</span>';
-                    break;
-                case 'NAME':
-                    result = result + '<span style="color:red;">'       + token.value + '</span>';
-                    break;
-                }
-            } else {
-                throw 'Can not parse value "' + token.value + '"!'
-            }
+            
+            result = result + token.value;
         }
 
         editor.innerHTML = result;

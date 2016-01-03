@@ -3,7 +3,7 @@
  *
  * Version 3.0.0.
  *
- * Copyright (c) 2015 Dmitry Zavodnikov.
+ * Copyright (c) 2015-2016 Dmitry Zavodnikov.
  *
  * Licensed under the MIT License.
  */
@@ -12,44 +12,61 @@
  * 
  * <code><pre>
  * var rules = [
- *     {
- *         name:    'number',            // Name
- *         pattern: new RegExp('[0-9]+') // RegExp
- *     }
+ *      {
+ *          name:           'number',
+ *          pattern:        new RegExp('[0-9]+'),
+ *          skip:           false,
+ *          preprocessing:  function(rawValue) {
+ *              return rawValue;
+ *          }
+ *      }
  * ];
  * </pre></code>
  * 
  * Return format:
  * <code><pre>
  * var tokens = [
- *     {
- *         value:    '123',
- *         startPos: 12,
- *         endPos:   15,
- *         type:     {
- *             name:    'number',
- *             pattern: new RegExp('[0-9]+')
- *         }
- *     }
+ *      {
+ *          type:       {
+ *              name:           'number',
+ *              pattern:        new RegExp('[0-9]+'),
+ *              skip:           false,
+ *              preprocessing:  function(rawValue) {
+ *                  return rawValue;
+ *              }
+ *          },
+ *          value:      '123',
+ *          startPos:   12,
+ *          endPos:     15
+ *      }
  * ];
  * </pre></code>
  */
 function tokenRulesPreprocessing(tokenRules) {
+    if (tokenRules == null) {
+        throw 'Parameter "tokenRules" can not be null or undefined!';
+    }
+
     for (var i = 0; i < tokenRules.length; ++i) {
         var tokenRule = tokenRules[i];
         if (!tokenRule.pattern) {
             throw 'All token rules should contain reg-exp pattern!';
         }
-        if (!tokenRule.name) {
+        if (tokenRule.name == null) {
             tokenRule.name = tokenRule.pattern;
+        }
+        if (tokenRule.skip == null) {
+            tokenRule.skip = false;
+        }
+        if (tokenRule.preprocessing == null) {
+            tokenRule.preprocessing = function(rawValue) {
+                return rawValue;
+            };
         }
     }
 }
 
 function tokenization(tokenRules, input) {
-    if (!tokenRules) {
-        throw 'Token rules can not be null!';
-    }
     tokenRulesPreprocessing(tokenRules);
 
     var tokens = [];
@@ -84,15 +101,18 @@ function tokenization(tokenRules, input) {
                 tokenType   = null;
             }
 
-            var end = currentPosition + tokenValue.length;
-            tokens.push({
-                value:      tokenValue,
-                startPos:   currentPosition,
-                endPos:     end,
-                type:       tokenType
-            });
-            currentPosition = end;
+            var next = currentPosition + tokenValue.length;
+            if (!tokenType.skip) {
+                tokens.push({
+                    type:       tokenType, 
+                    value:      tokenType.preprocessing(tokenValue),
+                    startPos:   currentPosition,
+                    endPos:     next
+                });
+            }
+            currentPosition = next;
         }
     }
     return tokens;
 }
+
