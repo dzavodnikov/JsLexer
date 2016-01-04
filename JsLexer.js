@@ -3,7 +3,7 @@
  *
  * Version 3.0.0.
  *
- * Copyright (c) 2015-2016 Dmitry Zavodnikov.
+ * Copyright (c) 2012-2016 Dmitry Zavodnikov.
  *
  * Licensed under the MIT License.
  */
