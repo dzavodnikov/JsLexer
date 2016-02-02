@@ -1,9 +1,9 @@
 /*
  * JsLexer -- Pure JavaScript Lexer.
  *
- * Version 3.0.0.
+ * Version 3.0.1.
  *
- * Copyright (c) 2012-2016 Dmitry Zavodnikov.
+ * Copyright (c) 2015-2016 Dmitry Zavodnikov.
  *
  * Licensed under the MIT License.
  */
@@ -102,13 +102,23 @@ function tokenization(tokenRules, input) {
             }
 
             var next = currentPosition + tokenValue.length;
-            if (!tokenType.skip) {
+            if (tokenType == null) {
+                // Add fragments that we can not be parsed to the output list with null token type value.
                 tokens.push({
-                    type:       tokenType, 
-                    value:      tokenType.preprocessing(tokenValue),
+                    type:       null, 
+                    value:      tokenValue,
                     startPos:   currentPosition,
                     endPos:     next
                 });
+            } else {
+                if (!tokenType.skip) {
+                    tokens.push({
+                        type:       tokenType, 
+                        value:      tokenType.preprocessing(tokenValue),
+                        startPos:   currentPosition,
+                        endPos:     next
+                    });
+                }
             }
             currentPosition = next;
         }
