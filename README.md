@@ -46,7 +46,7 @@ Simple Lexer on a pure JavaScript.
             }
         }, 
         {
-            name:           'UNPARSED', 
+            name:           'UNRECOGNIZED', // Ignore all unrecognized fragments.
             pattern:        new RegExp(".*"),
             preprocessing:  function(rawValue) {
                 return rawValue;
