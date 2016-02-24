@@ -44,6 +44,13 @@ Simple Lexer on a pure JavaScript.
             preprocess: function(value) {
                 return '<span style="font-weight:bold;">' + value + '</span>';
             }
+        }, 
+        {
+            name:           'UNPARSED', 
+            pattern:        new RegExp(".*"),
+            preprocessing:  function(rawValue) {
+                return rawValue;
+            }
         }
     ];
     

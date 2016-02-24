@@ -61,6 +61,13 @@
             preprocessing:  function(rawValue) {
                 return '<span style="color:red;">' + rawValue.toLowerCase() + '</span>';
             }
+        }, 
+        {
+            name:           'UNPARSED', 
+            pattern:        new RegExp(".*"),
+            preprocessing:  function(rawValue) {
+                return rawValue;
+            }
         }
     ];
     
@@ -84,7 +91,7 @@
 
 Calculator highlight: 
 <code id="editor" spellcheck="false">
-var A  =   1    +     22      *       (300        +         450);
+var A  = 1 + 22 * (300 + 450);
 </code>
 
 </body>

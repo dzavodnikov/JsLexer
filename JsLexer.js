@@ -1,7 +1,7 @@
 /*
  * JsLexer -- Pure JavaScript Lexer.
  *
- * Version 3.0.1.
+ * Version 4.0.0.
  *
  * Copyright (c) 2012-2016 Dmitry Zavodnikov.
  *
@@ -96,33 +96,25 @@ function tokenization(tokenRules, input) {
                 }
             }
 
+            // Check if proper token type was not found.
             if (tokenPosition != 0) {
-                tokenValue  = currentInput.substring(0, tokenPosition);
-                tokenType   = null;
+                throw 'Can not recognize string fragment "' + currentInput.substring(0, tokenPosition) + '"!';
             }
 
+            // Add token to output.
             var next = currentPosition + tokenValue.length;
-            if (tokenType == null) {
-                // Add fragments that we can not be parsed to the output list with null token type value.
+            if (!tokenType.skip) {
                 tokens.push({
-                    type:       null, 
-                    value:      tokenValue,
+                    type:       tokenType, 
+                    value:      tokenType.preprocessing(tokenValue),
                     startPos:   currentPosition,
                     endPos:     next
                 });
-            } else {
-                if (!tokenType.skip) {
-                    tokens.push({
-                        type:       tokenType, 
-                        value:      tokenType.preprocessing(tokenValue),
-                        startPos:   currentPosition,
-                        endPos:     next
-                    });
-                }
             }
             currentPosition = next;
         }
     }
+
     return tokens;
 }
 
